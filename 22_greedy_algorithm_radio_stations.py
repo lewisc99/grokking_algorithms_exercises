@@ -1,0 +1,29 @@
+# You pass an array in, and it gets converted to a set
+states_needed = set(["mt", "wa", "or", "id", "nv", "ut", "ca", "az"])
+
+stations = {}
+stations["kone"] = set(["id", "nv", "ut"])
+stations["ktwo"] = set(["wa", "id", "mt"])
+stations["kthree"] = set(["or", "nv", "ca"])
+stations["kfour"] = set(["nv", "ut"])
+stations["kfive"] = set(["ca", "az"])
+
+def my_set_covering(states_needed, stations):
+  final_stations = set()
+  while states_needed:
+    best_stations = None
+    states_covered = set()
+    for station, states_for_station in stations.items():
+      covered = states_needed & states_for_station
+      if len(covered) > len(states_covered) and station not in final_stations:
+        best_stations = station
+        states_covered = covered
+    if best_stations is not None:
+      states_needed -= states_covered
+      final_stations.add(best_stations)
+      stations.pop(best_stations)
+    else:
+      return None
+  return final_stations
+
+print(my_set_covering(states_needed, stations))
