@@ -6,72 +6,34 @@ class Item:
         self.value = value
 
 
+def knapsack_recursive(items, max_weight, idx=0):
+    # Base case: no items left or no capacity
+    if idx == len(items) or max_weight == 0:
+        return 0, []
+
+    item = items[idx]
+    # Option 1: skip the item
+    value_excl, items_excl = knapsack_recursive(items, max_weight, idx + 1)
+
+    # Option 2: include the item (if it fits)
+    if item.weight <= max_weight:
+        value_incl, items_incl = knapsack_recursive(
+            items, max_weight - item.weight, idx + 1
+        )
+        value_incl += item.value
+        items_incl = [item.name] + items_incl
+
+        # Choose better option
+        if value_incl > value_excl:
+            return value_incl, items_incl
+
+    return value_excl, items_excl
+
+
 # Define the items (same as the HTML example)
 items = [Item("Guitar", 1, 1500), Item("Stereo", 4, 3000), Item("Laptop", 3, 2000)]
-
-# Define the maximum weight of the knapsack
 max_weight = 4
 
-# Initialize a DP table:
-# dp[i][w] will hold the maximum value we can get by considering the first (i+1) items and a knapsack of capacity w
-# Let's break this down for clarity:
-
-# Number of items
-n = len(items)
-
-# Create a table with n rows (one for each item) and (max_weight + 1) columns (for each possible weight)
-dp = []
-for i in range(n):
-  row = []
-  for w in range(max_weight + 1):
-    row.append(0)  # Start with 0 value for each cell
-  dp.append(row)
-
-# Track the items included in the optimal solution
-# This creates a table (list of lists) where each cell holds a list of item names.
-# selected_items[i][w] will store the list of item names chosen for the first (i+1) items and weight w.
-selected_items = []
-for i in range(n):
-  row = []
-  for w in range(max_weight + 1):
-    row.append([])  # Start with an empty list for each cell
-  selected_items.append(row)
-
-# Fill the DP table
-for i in range(len(items)):
-    for w in range(1, max_weight + 1):
-        item = items[i]
-
-        # Option 1: exclude the item (take the value from the row above)
-        exclude_value = dp[i - 1][w] if i > 0 else 0
-        exclude_items = selected_items[i - 1][w] if i > 0 else []
-
-        # Option 2: include the item if it fits
-        if item.weight <= w:
-            remaining_weight = w - item.weight
-            include_value = item.value
-            include_items = [item.name]
-
-            if i > 0 and remaining_weight > 0:
-                include_value += dp[i - 1][remaining_weight]
-                include_items += selected_items[i - 1][remaining_weight]
-
-            # Choose better of the two options
-            if include_value > exclude_value:
-                dp[i][w] = include_value
-                selected_items[i][w] = include_items
-            else:
-                dp[i][w] = exclude_value
-                selected_items[i][w] = exclude_items
-        else:
-            # Can't include item; only option is to exclude
-            dp[i][w] = exclude_value
-            selected_items[i][w] = exclude_items
-
-# Result: bottom-right cell of the table
-max_value = dp[-1][-1]
-items_taken = selected_items[-1][-1]
-
-# Print result
+max_value, items_taken = knapsack_recursive(items, max_weight)
 print("Maximum value:", f"${max_value}")
 print("Items to take:", ", ".join(items_taken))
